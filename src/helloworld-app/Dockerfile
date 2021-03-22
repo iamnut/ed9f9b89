@@ -9,6 +9,9 @@ ENV HOST=0.0.0.0 \
     PORT=5000
 
 COPY . /app
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && apt-get clean
 RUN npm install
 
 HEALTHCHECK --interval=5s --timeout=5s CMD curl -sf http://localhost:5000/healthz || exit 1
