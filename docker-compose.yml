@@ -1,0 +1,69 @@
+version: "3.5"
+
+x-logging:
+  &default-logging
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "2"
+
+networks:
+  public-net:
+    name: public-net
+  backend-net:
+    name: backend-net
+
+services:
+  helloworld-app:
+    container_name: helloworld-app
+    build:
+      context: ./src/helloworld-app
+      dockerfile: Dockerfile
+    image: helloworld-app:20210322r1
+    logging: *default-logging
+    environment:
+      - TZ=Asia/Bangkok
+    networks:
+      public-net:
+        aliases:
+          - helloworld-app.container.local
+      backend-net:
+    links:
+      - postgresql
+
+
+  nginx-reverseproxy:
+    container_name: nginx-reverseproxy
+    image: nginx:1.18.0
+    logging: *default-logging
+    environment:
+      - TZ=Asia/Bangkok
+    networks:
+      public-net:
+    ports:
+      - 80:80
+    links:
+      - helloworld-app
+    volumes:
+      - ./src/nginx/conf.d:/etc/nginx/conf.d:ro
+
+  postgresql:
+    container_name: postgresql
+    image: postgres:13.2-alpine
+    logging: *default-logging
+    environment:
+      - TZ=Asia/Bangkok
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=cd11b5eeeb18c95ea9b80c4d8de69018b666962d074fecc54b2a5fcc42c91e57
+    networks:
+      backend-net:
+        aliases:
+          - postgresql.container.local
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+
+volumes:
+  postgresql-data:
+    name: postgresql-data
