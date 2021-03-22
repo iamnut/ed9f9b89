@@ -8,8 +8,8 @@ app.get('/', (req, res) => {
 })
 
 app.get('/healthz', (req, res) => {
-    res.send('online')
-  })
+  res.send('online')
+})
 
 app.listen(port, host, () => {
   console.log(`Example app listening at ${host}:${port}`)
